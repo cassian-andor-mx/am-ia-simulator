@@ -1,0 +1,15 @@
+Campaign Weekly Summary
+=======================
+
+Wins
+- Email delivered the strongest cost efficiency this week.
+- Search maintained high conversion volume with stable acquisition costs.
+
+Concerns
+- Social CPA remains above target and may require creative refresh.
+- Budget concentration in social is reducing overall blended efficiency.
+
+Action Priorities
+1. Reallocate a small portion of social budget to email tests.
+2. Launch new social creative variants focused on higher-intent segments.
+3. Recheck blended CPA after three days and adjust bidding rules.

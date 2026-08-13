@@ -1,0 +1,92 @@
+{
+  "id": "demo-ai-weekly-performance-review",
+  "prompt": {
+    "title": "Prompt",
+    "paragraphs": [
+      "You are a business performance analyst.",
+      "Review the provided weekly performance data and prepare a concise management update.",
+      "Keep the final management summary concise and actionable."
+    ],
+    "checklist": [
+      "Identify the three most important findings.",
+      "Highlight one potential risk.",
+      "Compare current performance with the previous period.",
+      "Present key metrics clearly.",
+      "Reference the performance chart.",
+      "Prepare downloadable executive summary and supporting data."
+    ],
+    "executeLabel": "Execute Prompt"
+  },
+  "events": [
+    {
+      "type": "status",
+      "delayMs": 0,
+      "content": "Starting weekly performance review..."
+    },
+    {
+      "type": "status",
+      "delayMs": 450,
+      "content": "Analyzing week-over-week business metrics..."
+    },
+    {
+      "type": "message",
+      "delayMs": 600,
+      "content": "Weekly performance improved overall, led by revenue growth and a higher conversion rate.",
+      "render": "stream"
+    },
+    {
+      "type": "message",
+      "delayMs": 350,
+      "content": "Key findings: revenue increased 7.3%, orders increased from 1,765 to 1,842, and conversion improved from 4.5% to 4.8%.",
+      "render": "instant"
+    },
+    {
+      "type": "table",
+      "delayMs": 300,
+      "content": {
+        "title": "Weekly Business Metrics",
+        "columns": ["Metric", "Current Week", "Previous Week", "Delta"],
+        "rows": [
+          ["Revenue", "$128,400", "$119,700", "+7.3%"],
+          ["Orders", "1,842", "1,765", "+4.4%"],
+          ["Conversion Rate", "4.8%", "4.5%", "+0.3 pp"],
+          ["Refund Rate", "2.1%", "1.6%", "+0.5 pp"],
+          ["Customer Satisfaction", "92%", "93%", "-1.0 pp"]
+        ]
+      }
+    },
+    {
+      "type": "link",
+      "delayMs": 250,
+      "content": {
+        "label": "Open weekly performance chart",
+        "url": "/simulations/demo-3/assets/weekly-performance-chart.png",
+        "description": "Chart reference used during management review."
+      }
+    },
+    {
+      "type": "message",
+      "delayMs": 260,
+      "content": "Management attention: refund rate increased from 1.6% to 2.1% and should be investigated despite otherwise positive results.",
+      "render": "instant"
+    },
+    {
+      "type": "complete",
+      "delayMs": 0
+    }
+  ],
+  "resources": [
+    {
+      "id": "demo3-executive-summary",
+      "fileName": "Executive-Summary.pdf",
+      "path": "/simulations/demo-3/assets/executive-summary.pdf",
+      "description": "Executive summary for the AI Weekly Performance Review scenario."
+    },
+    {
+      "id": "demo3-supporting-data",
+      "fileName": "Supporting-Data.csv",
+      "path": "/simulations/demo-3/assets/supporting-data.csv",
+      "description": "Supporting weekly metric data used in the simulation."
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "id": "demo-marketing-campaign-review",
+  "prompt": {
+    "title": "Prompt",
+    "paragraphs": [
+      "You are a campaign performance analyst for a small marketing team.",
+      "Review the weekly campaign metrics and produce a concise status update with wins, concerns, and action priorities.",
+      "Keep recommendations practical and focused on next-week execution."
+    ],
+    "checklist": [
+      "Identify the best performing campaign channel.",
+      "Highlight at least 2 risk indicators.",
+      "Provide 3 next actions with clear intent."
+    ],
+    "executeLabel": "Execute Prompt"
+  },
+  "events": [
+    {
+      "type": "status",
+      "delayMs": 0,
+      "content": "Processing campaign metrics..."
+    },
+    {
+      "type": "message",
+      "delayMs": 600,
+      "content": "Comparing channel conversion trends against spend distribution...",
+      "render": "stream"
+    },
+    {
+      "type": "table",
+      "delayMs": 350,
+      "content": {
+        "title": "Campaign Performance Snapshot",
+        "columns": ["Channel", "Spend", "Conversions", "CPA"],
+        "rows": [
+          ["Search", "$4,200", "188", "$22.34"],
+          ["Social", "$3,100", "96", "$32.29"],
+          ["Email", "$900", "84", "$10.71"]
+        ]
+      }
+    },
+    {
+      "type": "message",
+      "delayMs": 280,
+      "content": "Email remains the most cost-efficient channel, while social spend needs creative optimization.",
+      "render": "instant"
+    },
+    {
+      "type": "link",
+      "delayMs": 220,
+      "content": {
+        "label": "Open campaign notes",
+        "url": "https://example.com/campaign-notes",
+        "description": "Reference notes used for weekly campaign review decisions."
+      }
+    },
+    {
+      "type": "complete",
+      "delayMs": 0
+    }
+  ],
+  "resources": [
+    {
+      "id": "campaign-summary",
+      "fileName": "Campaign-Summary.txt",
+      "path": "/simulations/demo-2/assets/Campaign-Summary.txt",
+      "description": "Weekly campaign decision summary prepared by the simulation."
+    },
+    {
+      "id": "campaign-metrics",
+      "fileName": "Campaign-Metrics.csv",
+      "path": "/simulations/demo-2/assets/Campaign-Metrics.csv",
+      "description": "Tabular export of campaign spend and conversion efficiency."
+    }
+  ]
+}

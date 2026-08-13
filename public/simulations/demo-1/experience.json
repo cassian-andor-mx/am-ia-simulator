@@ -1,0 +1,76 @@
+{
+  "id": "demo-operations-weekly-summary",
+  "prompt": {
+    "title": "Prompt",
+    "paragraphs": [
+      "You are an operations analyst supporting a small retail team.",
+      "Analyze the weekly sales and customer support summaries, then prepare a concise executive update with key trends, risks, and recommendations.",
+      "Use clear language, keep the summary focused on decisions, and include a short list of follow-up actions for next week."
+    ],
+    "checklist": [
+      "Highlight the top 3 performance signals.",
+      "Call out at least 2 operational risks.",
+      "Suggest 3 practical next actions."
+    ],
+    "executeLabel": "Execute Prompt"
+  },
+  "events": [
+    {
+      "type": "status",
+      "delayMs": 0,
+      "content": "Processing..."
+    },
+    {
+      "type": "message",
+      "delayMs": 650,
+      "content": "Analyzing the provided information...",
+      "render": "stream"
+    },
+    {
+      "type": "message",
+      "delayMs": 400,
+      "content": "The analysis is complete.",
+      "render": "instant"
+    },
+    {
+      "type": "table",
+      "delayMs": 420,
+      "content": {
+        "title": "Weekly Performance Snapshot",
+        "columns": ["Week", "Sales", "Support Tickets"],
+        "rows": [
+          ["W1", "$12,400", "42"],
+          ["W2", "$13,180", "39"],
+          ["W3", "$11,920", "47"]
+        ]
+      }
+    },
+    {
+      "type": "link",
+      "delayMs": 260,
+      "content": {
+        "label": "Open dashboard reference",
+        "url": "https://example.com/weekly-dashboard",
+        "description": "Snapshot used by the analyst for cross-checking trends."
+      }
+    },
+    {
+      "type": "complete",
+      "delayMs": 0
+    }
+  ],
+  "resources": [
+    {
+      "id": "executive-summary",
+      "fileName": "Executive-Summary.txt",
+      "path": "/simulations/demo-1/assets/Executive-Summary.txt",
+      "description": "Concise weekly executive summary generated from the simulation dataset."
+    },
+    {
+      "id": "sales-analysis",
+      "fileName": "Sales-Analysis.csv",
+      "path": "/simulations/demo-1/assets/Sales-Analysis.csv",
+      "description": "Tabular export of weekly sales and support indicators."
+    }
+  ]
+}

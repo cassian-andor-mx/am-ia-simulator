@@ -1,0 +1,95 @@
+{
+  "id": "lab-create-executive-summary-with-ai",
+  "prompt": {
+    "title": "Prompt",
+    "paragraphs": [
+      "You are a business analyst preparing a weekly management briefing for non-technical stakeholders.",
+      "Create an executive summary from the provided performance data using clear, concise language.",
+      "Your summary must emphasize decision-making implications, not technical details."
+    ],
+    "checklist": [
+      "Report the top three findings with business impact.",
+      "Highlight one important risk and explain why it matters.",
+      "Compare current week vs previous week using concrete metrics.",
+      "Keep the final summary short, practical, and ready for leadership review."
+    ],
+    "executeLabel": "Execute Prompt"
+  },
+  "events": [
+    {
+      "type": "status",
+      "delayMs": 0,
+      "content": "Initializing management summary workflow..."
+    },
+    {
+      "type": "status",
+      "delayMs": 520,
+      "content": "Analyzing weekly KPI dataset and trend deltas..."
+    },
+    {
+      "type": "message",
+      "delayMs": 720,
+      "content": "Overall business performance improved this week, driven by stronger revenue and conversion efficiency.",
+      "render": "stream"
+    },
+    {
+      "type": "table",
+      "delayMs": 320,
+      "content": {
+        "title": "Weekly KPI Comparison",
+        "columns": ["Metric", "Current Week", "Previous Week", "Business Signal"],
+        "rows": [
+          ["Revenue", "$128,400", "$119,700", "Positive momentum"],
+          ["Orders", "1,842", "1,765", "Volume growth"],
+          ["Conversion Rate", "4.8%", "4.5%", "Efficiency improvement"],
+          ["Refund Rate", "2.1%", "1.6%", "Risk increase"],
+          ["Customer Satisfaction", "92%", "93%", "Minor decline"]
+        ]
+      }
+    },
+    {
+      "type": "message",
+      "delayMs": 260,
+      "content": "Primary risk: refund rate increased from 1.6% to 2.1%, which may reduce net margin if the trend continues.",
+      "render": "instant"
+    },
+    {
+      "type": "link",
+      "delayMs": 220,
+      "content": {
+        "label": "Open executive summary draft notes",
+        "url": "/simulations/demo-4/assets/executive-summary-draft.txt",
+        "description": "Draft notes used to prepare the final management summary."
+      }
+    },
+    {
+      "type": "message",
+      "delayMs": 220,
+      "content": "Final recommendation: preserve growth initiatives while prioritizing root-cause analysis for refund expansion.",
+      "render": "instant"
+    },
+    {
+      "type": "status",
+      "delayMs": 180,
+      "content": "Publishing final executive resources..."
+    },
+    {
+      "type": "complete",
+      "delayMs": 0
+    }
+  ],
+  "resources": [
+    {
+      "id": "executive-summary-pdf",
+      "fileName": "Executive-Summary.pdf",
+      "path": "/simulations/demo-4/assets/Executive-Summary.pdf",
+      "description": "Management-ready executive summary generated from the weekly KPI review."
+    },
+    {
+      "id": "supporting-kpi-data",
+      "fileName": "Supporting-KPI-Data.csv",
+      "path": "/simulations/demo-4/assets/Supporting-KPI-Data.csv",
+      "description": "Supporting KPI dataset used for the executive summary exercise."
+    }
+  ]
+}
