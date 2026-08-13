@@ -1,7 +1,36 @@
 import type { ExperienceDefinition } from "../simulator/types/experience";
 
-export const DEMO_EXPERIENCE_IDS = ["demo-1", "demo-2", "demo-3", "demo-4", "demo-5"] as const;
-export type DemoExperienceId = (typeof DEMO_EXPERIENCE_IDS)[number];
+const DEFAULT_DEMO_EXPERIENCE_IDS = ["demo-1", "demo-2", "demo-3", "demo-4", "demo-5"];
+type DemoManifest = {
+  demoIds: string[];
+};
+
+export type DemoExperienceId = string;
+
+function isValidDemoManifest(value: unknown): value is DemoManifest {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const manifest = value as DemoManifest;
+  return Array.isArray(manifest.demoIds) && manifest.demoIds.every((id) => typeof id === "string");
+}
+
+export async function loadDemoExperienceIds(): Promise<string[]> {
+  const response = await fetch("/simulations/manifest.json");
+
+  if (!response.ok) {
+    return DEFAULT_DEMO_EXPERIENCE_IDS;
+  }
+
+  const manifest = (await response.json()) as unknown;
+
+  if (!isValidDemoManifest(manifest) || manifest.demoIds.length === 0) {
+    return DEFAULT_DEMO_EXPERIENCE_IDS;
+  }
+
+  return manifest.demoIds;
+}
 
 export async function loadDemoExperience(demoId: DemoExperienceId): Promise<ExperienceDefinition> {
   const demoExperienceUrl = `/simulations/${demoId}/experience.json`;

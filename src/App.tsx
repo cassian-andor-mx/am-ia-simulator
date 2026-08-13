@@ -19,7 +19,7 @@ import {
 } from "./simulator/runtime/experienceRuntime";
 import { SimulationContentRenderer } from "./simulator/renderers/simulationContentRenderer";
 import {
-  DEMO_EXPERIENCE_IDS,
+  loadDemoExperienceIds,
   loadDemoExperience,
   type DemoExperienceId
 } from "./simulations/loadExperience";
@@ -210,7 +210,8 @@ function ResourcesPanel({ resources, isCompleted }: Readonly<ResourcesPanelProps
 function App({ externalParameterValues }: Readonly<AppProps>) {
   const [activeTab, setActiveTab] = useState<TabLabel>("Prompt");
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [selectedExperienceId, setSelectedExperienceId] = useState<DemoExperienceId>("demo-1");
+  const [demoExperienceIds, setDemoExperienceIds] = useState<DemoExperienceId[]>([]);
+  const [selectedExperienceId, setSelectedExperienceId] = useState<DemoExperienceId>("");
   const [experience, setExperience] = useState<ExperienceDefinition | null>(null);
   const [parameterValues, setParameterValues] = useState<Record<string, string>>({});
   const [, setExecutionContext] = useState<ExperienceContext | null>(null);
@@ -241,6 +242,21 @@ function App({ externalParameterValues }: Readonly<AppProps>) {
     : null;
 
   useEffect(() => {
+    const readDemoManifest = async () => {
+      const demoIds = await loadDemoExperienceIds();
+      setDemoExperienceIds(demoIds);
+      setSelectedExperienceId((currentId) => currentId || demoIds[0] || "");
+    };
+
+    void readDemoManifest();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedExperienceId) {
+      setIsLoadingExperience(false);
+      return;
+    }
+
     const readExperience = async () => {
       setIsLoadingExperience(true);
       setExperienceLoadError(null);
@@ -390,12 +406,13 @@ function App({ externalParameterValues }: Readonly<AppProps>) {
               <select
                 id="experience-select"
                 value={selectedExperienceId}
+                disabled={demoExperienceIds.length === 0}
                 onChange={(event) => {
                   setSelectedExperienceId(event.target.value as DemoExperienceId);
                   setActiveTab("Prompt");
                 }}
               >
-                {DEMO_EXPERIENCE_IDS.map((experienceId) => (
+                {demoExperienceIds.map((experienceId) => (
                   <option key={experienceId} value={experienceId}>
                     {experienceId}
                   </option>
