@@ -140,6 +140,11 @@ p {
   padding: 0.95rem 1rem 1rem;
 }
 
+.content-area.simulation-content-area {
+  place-items: stretch;
+  padding: 0.4rem 0.45rem 0.5rem;
+}
+
 .content-area p {
   margin: 0;
   color: #5a626f;
@@ -207,6 +212,27 @@ p {
   max-height: 250px;
   overflow-y: auto;
   padding-right: 0.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: #bccde8 #eef3fb;
+}
+
+.prompt-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.prompt-body::-webkit-scrollbar-track {
+  background: #eef3fb;
+  border-radius: 999px;
+}
+
+.prompt-body::-webkit-scrollbar-thumb {
+  background: #bccde8;
+  border: 2px solid #eef3fb;
+  border-radius: 999px;
+}
+
+.prompt-body::-webkit-scrollbar-thumb:hover {
+  background: #a8bddf;
 }
 
 .prompt-body p {
@@ -265,6 +291,10 @@ p {
   padding: 0.72rem 0.75rem;
 }
 
+.simulation-content-area .simulation-panel {
+  width: 100%;
+}
+
 .processing-status {
   margin: 0;
   color: #8cb5ff;
@@ -280,6 +310,27 @@ p {
   max-height: 250px;
   overflow-y: auto;
   padding-right: 0.2rem;
+  scrollbar-width: thin;
+  scrollbar-color: #c7d7f3 #1a2740;
+}
+
+.simulation-log::-webkit-scrollbar {
+  width: 10px;
+}
+
+.simulation-log::-webkit-scrollbar-track {
+  background: #1a2740;
+  border-radius: 999px;
+}
+
+.simulation-log::-webkit-scrollbar-thumb {
+  background: #c7d7f3;
+  border: 2px solid #1a2740;
+  border-radius: 999px;
+}
+
+.simulation-log::-webkit-scrollbar-thumb:hover {
+  background: #dbe6fb;
 }
 
 .simulation-message {
@@ -522,6 +573,10 @@ p {
   .content-area {
     padding-left: 0.8rem;
     padding-right: 0.8rem;
+  }
+
+  .content-area.simulation-content-area {
+    padding: 0.45rem;
   }
 
   .panel-header {

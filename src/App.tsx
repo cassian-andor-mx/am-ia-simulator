@@ -12,6 +12,11 @@ import {
   type EngineExecutionState,
   type EngineSnapshot
 } from "./simulator/engine/experienceEngine";
+import {
+  getInitialParameterValues,
+  getInterpolatedExperience,
+  mergeWithParameterDefaults
+} from "./simulator/runtime/experienceRuntime";
 import { SimulationContentRenderer } from "./simulator/renderers/simulationContentRenderer";
 import {
   DEMO_EXPERIENCE_IDS,
@@ -24,117 +29,13 @@ type TabLabel = (typeof TAB_LABELS)[number];
 
 const getTabId = (tabLabel: TabLabel): string => `tab-${tabLabel.toLowerCase()}`;
 const getPanelId = (tabLabel: TabLabel): string => `panel-${tabLabel.toLowerCase()}`;
-const PLACEHOLDER_PATTERN = /{{\s*([a-zA-Z0-9_-]+)\s*}}/g;
 
-function getInitialParameterValues(
-  parameterDefinitions: ExperienceParameterDefinition[] | undefined
-): Record<string, string> {
-  if (!parameterDefinitions) {
-    return {};
-  }
-
-  return parameterDefinitions.reduce<Record<string, string>>((parameterValues, parameter) => {
-    parameterValues[parameter.id] = parameter.defaultValue;
-    return parameterValues;
-  }, {});
-}
-
-function interpolateText(
-  value: string,
-  parameterValues: Record<string, string>
-): { content: string; missingKeys: string[] } {
-  const missingKeys = new Set<string>();
-
-  const content = value.replace(PLACEHOLDER_PATTERN, (fullMatch, parameterId: string) => {
-    const parameterValue = parameterValues[parameterId];
-
-    if (parameterValue === undefined) {
-      missingKeys.add(parameterId);
-      return fullMatch;
-    }
-
-    return parameterValue;
-  });
-
-  return {
-    content,
-    missingKeys: [...missingKeys]
-  };
-}
-
-function getInterpolatedExperience(
-  experience: ExperienceDefinition,
-  parameterValues: Record<string, string>
-): { experience: ExperienceDefinition; missingKeys: string[] } {
-  const missingKeys = new Set<string>();
-
-  const interpolateAndTrack = (value: string): string => {
-    const result = interpolateText(value, parameterValues);
-    result.missingKeys.forEach((missingKey) => missingKeys.add(missingKey));
-    return result.content;
-  };
-
-  return {
-    experience: {
-      ...experience,
-      prompt: {
-        title: interpolateAndTrack(experience.prompt.title),
-        paragraphs: experience.prompt.paragraphs.map(interpolateAndTrack),
-        checklist: experience.prompt.checklist.map(interpolateAndTrack),
-        executeLabel: interpolateAndTrack(experience.prompt.executeLabel)
-      },
-      events: experience.events.map((event) => {
-        if (event.type === "status") {
-          return {
-            ...event,
-            content: interpolateAndTrack(event.content)
-          };
-        }
-
-        if (event.type === "message") {
-          return {
-            ...event,
-            content: interpolateAndTrack(event.content)
-          };
-        }
-
-        if (event.type === "table") {
-          return {
-            ...event,
-            content: {
-              title: interpolateAndTrack(event.content.title),
-              columns: event.content.columns.map(interpolateAndTrack),
-              rows: event.content.rows.map((row) => row.map(interpolateAndTrack))
-            }
-          };
-        }
-
-        if (event.type === "link") {
-          return {
-            ...event,
-            content: {
-              ...event.content,
-              label: interpolateAndTrack(event.content.label),
-              description: event.content.description
-                ? interpolateAndTrack(event.content.description)
-                : undefined
-            }
-          };
-        }
-
-        return event;
-      }),
-      resources: experience.resources.map((resource) => ({
-        ...resource,
-        fileName: interpolateAndTrack(resource.fileName),
-        description: interpolateAndTrack(resource.description)
-      }))
-    },
-    missingKeys: [...missingKeys]
-  };
-}
+type AppProps = {
+  externalParameterValues?: Record<string, string>;
+};
 
 type PromptPanelProps = {
+  showInternalControls: boolean;
   parameterDefinitions: ExperienceParameterDefinition[];
   parameterValues: Record<string, string>;
   missingInterpolationKeys: string[];
@@ -145,6 +46,7 @@ type PromptPanelProps = {
 };
 
 function PromptPanel({
+  showInternalControls,
   parameterDefinitions,
   parameterValues,
   missingInterpolationKeys,
@@ -158,7 +60,7 @@ function PromptPanel({
     <article className="prompt-panel" aria-labelledby="prompt-title">
       <h2 id="prompt-title">{prompt.title}</h2>
 
-      {parameterDefinitions.length > 0 ? (
+      {showInternalControls && parameterDefinitions.length > 0 ? (
         <div className="parameter-section" aria-label="Experience parameters">
           {parameterDefinitions.map((parameter) => (
             <label key={parameter.id} className="parameter-field" htmlFor={`parameter-${parameter.id}`}>
@@ -305,7 +207,7 @@ function ResourcesPanel({ resources, isCompleted }: Readonly<ResourcesPanelProps
   );
 }
 
-function App() {
+function App({ externalParameterValues }: Readonly<AppProps>) {
   const [activeTab, setActiveTab] = useState<TabLabel>("Prompt");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedExperienceId, setSelectedExperienceId] = useState<DemoExperienceId>("demo-1");
@@ -327,8 +229,15 @@ function App() {
     Simulation: null,
     Resources: null
   });
+  const hasExternalParameterSource = externalParameterValues !== undefined;
+  const effectiveParameterValues = experience
+    ? mergeWithParameterDefaults(
+        experience.parameters,
+        hasExternalParameterSource ? externalParameterValues : parameterValues
+      )
+    : {};
   const experienceInterpolation = experience
-    ? getInterpolatedExperience(experience, parameterValues)
+    ? getInterpolatedExperience(experience, effectiveParameterValues)
     : null;
 
   useEffect(() => {
@@ -393,7 +302,7 @@ function App() {
     }
 
     const nextExecutionContext: ExperienceContext = {
-      parameters: { ...parameterValues }
+      parameters: { ...effectiveParameterValues }
     };
 
     const runtimeExperience = getInterpolatedExperience(experience, nextExecutionContext.parameters);
@@ -534,7 +443,7 @@ function App() {
         </nav>
 
         <section
-          className="content-area"
+          className={`content-area${activeTab === "Simulation" ? " simulation-content-area" : ""}`}
           role="tabpanel"
           id={getPanelId(activeTab)}
           aria-labelledby={getTabId(activeTab)}
@@ -545,7 +454,8 @@ function App() {
           {activeTab === "Prompt" && experience && !isLoadingExperience && !experienceLoadError ? (
             <PromptPanel
               parameterDefinitions={experience.parameters ?? []}
-              parameterValues={parameterValues}
+              showInternalControls={!hasExternalParameterSource}
+              parameterValues={effectiveParameterValues}
               missingInterpolationKeys={experienceInterpolation?.missingKeys ?? []}
               onParameterChange={handleParameterChange}
               prompt={experienceInterpolation?.experience.prompt ?? experience.prompt}
