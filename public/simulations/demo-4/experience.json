@@ -1,14 +1,36 @@
 {
   "id": "lab-create-executive-summary-with-ai",
+  "parameters": [
+    {
+      "id": "role",
+      "label": "Your role",
+      "type": "select",
+      "defaultValue": "Business Analyst",
+      "options": [
+        {
+          "value": "Business Analyst",
+          "label": "Business Analyst"
+        },
+        {
+          "value": "Operations Manager",
+          "label": "Operations Manager"
+        },
+        {
+          "value": "Small Business Owner",
+          "label": "Small Business Owner"
+        }
+      ]
+    }
+  ],
   "prompt": {
     "title": "Prompt",
     "paragraphs": [
-      "You are a business analyst preparing a weekly management briefing for non-technical stakeholders.",
+      "You are helping a {{role}} prepare a weekly management briefing for non-technical stakeholders.",
       "Create an executive summary from the provided performance data using clear, concise language.",
-      "Your summary must emphasize decision-making implications, not technical details."
+      "Your summary must emphasize decision-making implications for a {{role}}, not technical details."
     ],
     "checklist": [
-      "Report the top three findings with business impact.",
+      "Report the top three findings with business impact for the {{role}}.",
       "Highlight one important risk and explain why it matters.",
       "Compare current week vs previous week using concrete metrics.",
       "Keep the final summary short, practical, and ready for leadership review."
@@ -19,17 +41,17 @@
     {
       "type": "status",
       "delayMs": 0,
-      "content": "Initializing management summary workflow..."
+      "content": "Initializing management summary workflow for the {{role}}..."
     },
     {
       "type": "status",
       "delayMs": 520,
-      "content": "Analyzing weekly KPI dataset and trend deltas..."
+      "content": "Analyzing weekly KPI dataset and trend deltas for the {{role}}..."
     },
     {
       "type": "message",
       "delayMs": 720,
-      "content": "Overall business performance improved this week, driven by stronger revenue and conversion efficiency.",
+      "content": "Overall business performance improved this week for the {{role}}, driven by stronger revenue and conversion efficiency.",
       "render": "stream"
     },
     {
@@ -50,28 +72,28 @@
     {
       "type": "message",
       "delayMs": 260,
-      "content": "Primary risk: refund rate increased from 1.6% to 2.1%, which may reduce net margin if the trend continues.",
+      "content": "Primary risk for the {{role}}: refund rate increased from 1.6% to 2.1%, which may reduce net margin if the trend continues.",
       "render": "instant"
     },
     {
       "type": "link",
       "delayMs": 220,
       "content": {
-        "label": "Open executive summary draft notes",
+        "label": "Open {{role}} draft notes",
         "url": "/simulations/demo-4/assets/executive-summary-draft.txt",
-        "description": "Draft notes used to prepare the final management summary."
+        "description": "Draft notes used to prepare the final management summary for the {{role}}."
       }
     },
     {
       "type": "message",
       "delayMs": 220,
-      "content": "Final recommendation: preserve growth initiatives while prioritizing root-cause analysis for refund expansion.",
+      "content": "Final recommendation for the {{role}}: preserve growth initiatives while prioritizing root-cause analysis for refund expansion.",
       "render": "instant"
     },
     {
       "type": "status",
       "delayMs": 180,
-      "content": "Publishing final executive resources..."
+      "content": "Publishing final executive resources for the {{role}}..."
     },
     {
       "type": "complete",
@@ -83,13 +105,13 @@
       "id": "executive-summary-pdf",
       "fileName": "Executive-Summary.pdf",
       "path": "/simulations/demo-4/assets/Executive-Summary.pdf",
-      "description": "Management-ready executive summary generated from the weekly KPI review."
+      "description": "Management-ready executive summary generated from the weekly KPI review for the {{role}}."
     },
     {
       "id": "supporting-kpi-data",
       "fileName": "Supporting-KPI-Data.csv",
       "path": "/simulations/demo-4/assets/Supporting-KPI-Data.csv",
-      "description": "Supporting KPI dataset used for the executive summary exercise."
+      "description": "Supporting KPI dataset used for the executive summary exercise for the {{role}}."
     }
   ]
 }

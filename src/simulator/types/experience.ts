@@ -5,6 +5,23 @@ export type PromptDefinition = {
   executeLabel: string;
 };
 
+export type ExperienceParameterOption = {
+  value: string;
+  label: string;
+};
+
+export type ExperienceParameterDefinition = {
+  id: string;
+  label: string;
+  type: "select";
+  defaultValue: string;
+  options: ExperienceParameterOption[];
+};
+
+export type ExperienceContext = {
+  parameters: Record<string, string>;
+};
+
 export type ExperienceResource = {
   id: string;
   fileName: string;
@@ -55,6 +72,7 @@ export type ExperienceEvent =
 
 export type ExperienceDefinition = {
   id: string;
+  parameters?: ExperienceParameterDefinition[];
   prompt: PromptDefinition;
   events: ExperienceEvent[];
   resources: ExperienceResource[];
