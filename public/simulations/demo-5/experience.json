@@ -1,0 +1,117 @@
+{
+  "id": "demo-personalized-weekly-performance-review",
+  "parameters": [
+    {
+      "id": "role",
+      "label": "Your role",
+      "type": "select",
+      "defaultValue": "Sales Manager",
+      "options": [
+        {
+          "value": "Sales Manager",
+          "label": "Sales Manager"
+        },
+        {
+          "value": "Operations Manager",
+          "label": "Operations Manager"
+        },
+        {
+          "value": "Business Owner",
+          "label": "Business Owner"
+        }
+      ]
+    }
+  ],
+  "prompt": {
+    "title": "Prompt",
+    "paragraphs": [
+      "You are helping a {{role}} review weekly business performance.",
+      "Prepare a concise weekly performance review that highlights business momentum, one operational risk, and the most important management action.",
+      "Keep the update practical for the {{role}} and ready to share with leadership."
+    ],
+    "checklist": [
+      "Identify the top three business signals for the {{role}}.",
+      "Highlight one operational risk with a short explanation.",
+      "Reference the weekly KPI table and management notes.",
+      "Keep the summary concise and decision-oriented."
+    ],
+    "executeLabel": "Run Prompt"
+  },
+  "events": [
+    {
+      "type": "status",
+      "delayMs": 0,
+      "content": "Preparing personalized review workspace for the {{role}}..."
+    },
+    {
+      "type": "status",
+      "delayMs": 420,
+      "content": "Reviewing weekly performance signals for the {{role}}..."
+    },
+    {
+      "type": "message",
+      "delayMs": 620,
+      "content": "Weekly performance is broadly positive for the {{role}}, led by stronger revenue, healthier order volume, and better conversion efficiency.",
+      "render": "stream"
+    },
+    {
+      "type": "table",
+      "delayMs": 260,
+      "content": {
+        "title": "Weekly KPI Snapshot for the {{role}}",
+        "columns": ["Metric", "Current Week", "Previous Week", "Signal"],
+        "rows": [
+          ["Revenue", "$128,400", "$119,700", "Positive momentum"],
+          ["Orders", "1,842", "1,765", "Healthy demand"],
+          ["Conversion Rate", "4.8%", "4.5%", "Efficiency improvement"],
+          ["Refund Rate", "2.1%", "1.6%", "Watch closely"],
+          ["Customer Satisfaction", "92%", "93%", "Stable but slightly softer"]
+        ]
+      }
+    },
+    {
+      "type": "message",
+      "delayMs": 240,
+      "content": "Primary risk for the {{role}}: refund rate rose from 1.6% to 2.1%, which could pressure margin if left unresolved.",
+      "render": "instant"
+    },
+    {
+      "type": "link",
+      "delayMs": 220,
+      "content": {
+        "label": "Open planning notes for the {{role}}",
+        "url": "/simulations/demo-5/assets/management-notes.txt",
+        "description": "Short management notes supporting the weekly review for the {{role}}."
+      }
+    },
+    {
+      "type": "message",
+      "delayMs": 220,
+      "content": "Recommended action for the {{role}}: preserve growth initiatives while assigning immediate analysis of refund drivers.",
+      "render": "instant"
+    },
+    {
+      "type": "status",
+      "delayMs": 180,
+      "content": "Publishing personalized resource pack for the {{role}}..."
+    },
+    {
+      "type": "complete",
+      "delayMs": 0
+    }
+  ],
+  "resources": [
+    {
+      "id": "weekly-review-brief",
+      "fileName": "{{role}}-Weekly-Review.txt",
+      "path": "/simulations/demo-5/assets/weekly-review-brief.txt",
+      "description": "Short weekly review brief prepared for the {{role}}."
+    },
+    {
+      "id": "weekly-kpi-export",
+      "fileName": "{{role}}-KPI-Export.csv",
+      "path": "/simulations/demo-5/assets/weekly-kpi-export.csv",
+      "description": "Weekly KPI export referenced during the personalized review for the {{role}}."
+    }
+  ]
+}

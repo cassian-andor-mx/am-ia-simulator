@@ -1,6 +1,6 @@
 import type { ExperienceDefinition } from "../simulator/types/experience";
 
-export const DEMO_EXPERIENCE_IDS = ["demo-1", "demo-2", "demo-3", "demo-4"] as const;
+export const DEMO_EXPERIENCE_IDS = ["demo-1", "demo-2", "demo-3", "demo-4", "demo-5"] as const;
 export type DemoExperienceId = (typeof DEMO_EXPERIENCE_IDS)[number];
 
 export async function loadDemoExperience(demoId: DemoExperienceId): Promise<ExperienceDefinition> {
