@@ -1,6 +1,6 @@
 import type { ExperienceDefinition } from "../simulator/types/experience";
 
-const DEFAULT_DEMO_EXPERIENCE_IDS = ["demo-1", "demo-2", "demo-3", "demo-4", "demo-5"];
+const DEFAULT_DEMO_EXPERIENCE_IDS = ["demo-1", "demo-2", "demo-3", "demo-4", "demo-5", "demo-6"];
 type DemoManifest = {
   demoIds: string[];
 };

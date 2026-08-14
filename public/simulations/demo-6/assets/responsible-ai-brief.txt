@@ -1,0 +1,13 @@
+Weekly Responsible AI Brief
+
+Top Result
+Revenue grew 7.3% week over week.
+
+Primary Risk
+Refund rate increased from 1.6% to 2.1%, which may pressure net margin.
+
+Next Action
+Assign operations and support leads to identify top refund drivers and propose fixes this week.
+
+Efficiency Insight
+Request concise output when detailed narrative is not needed.

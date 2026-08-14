@@ -6,6 +6,7 @@ import type {
   ExperienceResource,
   PromptDefinition
 } from "./simulator/types/experience";
+import type { UsageMethodologyConfidence, UsageMetrics } from "./simulator/types/usage";
 import {
   ExperienceEngine,
   type EngineContentItem,
@@ -17,6 +18,7 @@ import {
   getInterpolatedExperience,
   mergeWithParameterDefaults
 } from "./simulator/runtime/experienceRuntime";
+import { calculateUsageMetrics } from "./simulator/runtime/usageMetrics";
 import { SimulationContentRenderer } from "./simulator/renderers/simulationContentRenderer";
 import {
   loadDemoExperienceIds,
@@ -29,6 +31,227 @@ type TabLabel = (typeof TAB_LABELS)[number];
 
 const getTabId = (tabLabel: TabLabel): string => `tab-${tabLabel.toLowerCase()}`;
 const getPanelId = (tabLabel: TabLabel): string => `panel-${tabLabel.toLowerCase()}`;
+
+const formatUsageTokenCount = (tokenCount: number | null): string => {
+  if (tokenCount === null) {
+    return "—";
+  }
+
+  return `~${tokenCount.toLocaleString()}`;
+};
+
+const formatUsageRatio = (ratio: number | null): string => {
+  if (ratio === null) {
+    return "—";
+  }
+
+  return `${ratio.toFixed(2)}x`;
+};
+
+const formatMethodologyConfidence = (confidence: UsageMethodologyConfidence): string => {
+  if (confidence === "CALCULATED_REFERENCE") {
+    return "Calculated reference";
+  }
+
+  if (confidence === "ESTIMATED") {
+    return "Estimated";
+  }
+
+  return "Reference only";
+};
+
+const formatEnvironmentalValue = (value: number | undefined, unit: string): string => {
+  if (value === undefined) {
+    return "Not available";
+  }
+
+  return `~${value.toFixed(2)} ${unit}`;
+};
+
+const LOAD_BAND_FILL_COUNT: Record<string, number> = {
+  "Very Low": 1,
+  Low: 2,
+  Moderate: 3,
+  High: 4,
+  "Very High": 5
+};
+
+const getUsageMeterFillCount = (interactionLoad: string): number =>
+  LOAD_BAND_FILL_COUNT[interactionLoad] ?? 3;
+
+type UsageDetailsDialogProps = {
+  usageMetrics: UsageMetrics;
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+function UsageDetailsDialog({ usageMetrics, isOpen, onClose }: Readonly<UsageDetailsDialogProps>) {
+  const usageDetailsCloseButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    usageDetailsCloseButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  const hasEnvironmentalValues =
+    usageMetrics.environmentalReference?.referenceEnergyWh !== undefined ||
+    usageMetrics.environmentalReference?.referenceCO2eGrams !== undefined ||
+    usageMetrics.environmentalReference?.referenceWaterMl !== undefined;
+
+  return (
+    <dialog
+      className="usage-details-overlay"
+      open
+      aria-labelledby="usage-details-title"
+      aria-describedby="usage-details-description"
+    >
+      <section id="usage-details-panel" className="usage-details-panel">
+        <div className="usage-details-header">
+          <div>
+            <h3 id="usage-details-title">AI Usage Details</h3>
+            <p id="usage-details-description">
+              Token usage is estimated from the simulated prompt and visible response.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="usage-details-close-button"
+            onClick={onClose}
+            ref={usageDetailsCloseButtonRef}
+          >
+            Close
+          </button>
+        </div>
+
+        <dl className="usage-details-grid">
+          <div>
+            <dt>Input tokens</dt>
+            <dd>{formatUsageTokenCount(usageMetrics.inputTokens)}</dd>
+          </div>
+          <div>
+            <dt>Output tokens</dt>
+            <dd>{formatUsageTokenCount(usageMetrics.outputTokens)}</dd>
+          </div>
+          <div>
+            <dt>Total tokens</dt>
+            <dd>{formatUsageTokenCount(usageMetrics.totalTokens)}</dd>
+          </div>
+          <div>
+            <dt>Output / Input</dt>
+            <dd>{formatUsageRatio(usageMetrics.outputInputRatio)}</dd>
+          </div>
+          <div>
+            <dt>Interaction load</dt>
+            <dd>{usageMetrics.interactionLoad ?? "—"}</dd>
+          </div>
+          <div>
+            <dt>Methodology confidence</dt>
+            <dd>{formatMethodologyConfidence(usageMetrics.methodologyConfidence)}</dd>
+          </div>
+        </dl>
+
+        <section className="usage-details-environment" aria-labelledby="usage-details-environment-title">
+          <h4 id="usage-details-environment-title">Environmental impact</h4>
+          <p className="usage-details-environment-meta">Estimated • Reference profile</p>
+
+          {usageMetrics.environmentalReference ? (
+            <>
+              {hasEnvironmentalValues ? (
+                <dl className="usage-details-environment-values">
+                  <div>
+                    <dt>Energy</dt>
+                    <dd>
+                      {formatEnvironmentalValue(
+                        usageMetrics.environmentalReference.referenceEnergyWh,
+                        "Wh"
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>CO2e</dt>
+                    <dd>
+                      {formatEnvironmentalValue(
+                        usageMetrics.environmentalReference.referenceCO2eGrams,
+                        "g"
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Water</dt>
+                    <dd>
+                      {formatEnvironmentalValue(
+                        usageMetrics.environmentalReference.referenceWaterMl,
+                        "mL"
+                      )}
+                    </dd>
+                  </div>
+                </dl>
+              ) : null}
+
+              <p>
+                <strong>Reference profile:</strong> {usageMetrics.referenceProfileLabel} ({usageMetrics.referenceProfileVersionDate})
+              </p>
+              <p>
+                <strong>Workload:</strong> {usageMetrics.environmentalReference.workloadDescription}
+              </p>
+              <p>
+                <strong>Normalization basis:</strong> {usageMetrics.environmentalReference.normalizationBasis}
+              </p>
+              <p>
+                <strong>Source:</strong>{" "}
+                <a href={usageMetrics.environmentalReference.sourceUrl} target="_blank" rel="noreferrer">
+                  {usageMetrics.environmentalReference.sourceLabel}
+                </a>{" "}
+                ({usageMetrics.environmentalReference.sourceDate})
+              </p>
+            </>
+          ) : (
+            <p>No environmental reference profile is configured for this meter.</p>
+          )}
+        </section>
+
+        <section className="usage-details-explanation" aria-labelledby="usage-details-how-title">
+          <h4 id="usage-details-how-title">How this is calculated</h4>
+          <p>
+            Input uses the final interpolated prompt shown for execution. Output uses one canonical textual
+            serialization of the visible simulated response. This keeps the meter reproducible and avoids
+            counting hidden or binary content.
+          </p>
+          <p>
+            All values shown here are simulator estimates, not live provider telemetry.
+          </p>
+
+          <h5 className="usage-details-limitations-title">Known limitations</h5>
+          <ul className="usage-details-limitations-list">
+            {usageMetrics.limitations.map((limitation) => (
+              <li key={limitation}>{limitation}</li>
+            ))}
+          </ul>
+        </section>
+      </section>
+    </dialog>
+  );
+}
 
 type AppProps = {
   externalParameterValues?: Record<string, string>;
@@ -55,59 +278,65 @@ function PromptPanel({
   onExecutePrompt,
   isRunning
 }: Readonly<PromptPanelProps>) {
-
   return (
     <article className="prompt-panel" aria-labelledby="prompt-title">
-      <h2 id="prompt-title">{prompt.title}</h2>
+      <header className="prompt-panel-header">
+        <h2 id="prompt-title">{prompt.title}</h2>
+        <p className="prompt-panel-caption">Read-only prompt composer</p>
+      </header>
 
-      {showInternalControls && parameterDefinitions.length > 0 ? (
-        <div className="parameter-section" aria-label="Experience parameters">
-          {parameterDefinitions.map((parameter) => (
-            <label key={parameter.id} className="parameter-field" htmlFor={`parameter-${parameter.id}`}>
-              <span>{parameter.label}</span>
-              <select
-                id={`parameter-${parameter.id}`}
-                value={parameterValues[parameter.id] ?? parameter.defaultValue}
-                onChange={(event) => onParameterChange(parameter.id, event.target.value)}
-                disabled={isRunning}
-              >
-                {parameter.options.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+      <div className="prompt-composer-surface">
+        <div className="prompt-body">
+          {prompt.paragraphs.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
           ))}
+
+          <ul>
+            {prompt.checklist.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
         </div>
-      ) : null}
 
-      {missingInterpolationKeys.length > 0 ? (
-        <p className="prompt-warning" role="alert">
-          Missing parameter values for: {missingInterpolationKeys.join(", ")}
-        </p>
-      ) : null}
+        {showInternalControls && parameterDefinitions.length > 0 ? (
+          <div className="parameter-section" aria-label="Experience parameters">
+            {parameterDefinitions.map((parameter) => (
+              <label key={parameter.id} className="parameter-field" htmlFor={`parameter-${parameter.id}`}>
+                <span>{parameter.label}</span>
+                <select
+                  id={`parameter-${parameter.id}`}
+                  value={parameterValues[parameter.id] ?? parameter.defaultValue}
+                  onChange={(event) => onParameterChange(parameter.id, event.target.value)}
+                  disabled={isRunning}
+                >
+                  {parameter.options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+          </div>
+        ) : null}
 
-      <div className="prompt-body">
-        {prompt.paragraphs.map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
-        ))}
+        {missingInterpolationKeys.length > 0 ? (
+          <p className="prompt-warning" role="alert">
+            Missing parameter values for: {missingInterpolationKeys.join(", ")}
+          </p>
+        ) : null}
 
-        <ul>
-          {prompt.checklist.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
+        <div className="prompt-actions">
+          <button
+            type="button"
+            className="execute-button"
+            onClick={onExecutePrompt}
+            disabled={isRunning || missingInterpolationKeys.length > 0}
+          >
+            Run Prompt
+          </button>
+        </div>
       </div>
-
-      <button
-        type="button"
-        className="execute-button"
-        onClick={onExecutePrompt}
-        disabled={isRunning || missingInterpolationKeys.length > 0}
-      >
-        {prompt.executeLabel}
-      </button>
     </article>
   );
 }
@@ -116,6 +345,7 @@ type SimulationPanelProps = {
   state: EngineExecutionState;
   statusMessage: string;
   contentItems: EngineContentItem[];
+  prompt: PromptDefinition | null;
   onOpenResources: () => void;
 };
 
@@ -123,9 +353,11 @@ function SimulationPanel({
   state,
   statusMessage,
   contentItems,
+  prompt,
   onOpenResources
 }: Readonly<SimulationPanelProps>) {
   const simulationLogRef = useRef<HTMLDivElement | null>(null);
+  const [isUsageDetailsOpen, setIsUsageDetailsOpen] = useState(false);
 
   useEffect(() => {
     if (!simulationLogRef.current) {
@@ -142,6 +374,8 @@ function SimulationPanel({
     return <p>Run Execute Prompt in the Prompt tab to start the simulation.</p>;
   }
 
+  const usageMetrics = state === "completed" && prompt ? calculateUsageMetrics(prompt, contentItems) : null;
+
   return (
     <article className="simulation-panel" aria-live="polite">
       {statusMessage ? <p className="processing-status">{statusMessage}</p> : null}
@@ -155,9 +389,53 @@ function SimulationPanel({
       {state === "completed" ? (
         <div className="simulation-complete">
           <p>Simulation completed. Generated resources are now available.</p>
-          <button type="button" className="open-resources-button" onClick={onOpenResources}>
-            Open Resources
-          </button>
+
+          {usageMetrics ? (
+            <div className="usage-meter-summary" aria-label="AI usage summary">
+              <div className="usage-meter-summary-labels">
+                <span className="usage-meter-summary-title">AI Usage</span>
+                <span className="usage-meter-summary-band">{usageMetrics.interactionLoad ?? "Moderate"}</span>
+              </div>
+
+              <div className="usage-meter-summary-bar" aria-hidden="true">
+                {Array.from({ length: 5 }).map((_, index) => {
+                  const filled = index < getUsageMeterFillCount(usageMetrics.interactionLoad ?? "Moderate");
+
+                  return (
+                    <span
+                      key={`usage-bar-${index}`}
+                      className={`usage-meter-summary-segment${filled ? " is-filled" : ""}`}
+                    />
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                className="usage-meter-summary-trigger"
+                aria-label="Open AI usage details"
+                aria-expanded={isUsageDetailsOpen}
+                aria-controls="usage-details-panel"
+                onClick={() => setIsUsageDetailsOpen((currentValue) => !currentValue)}
+              >
+                ›
+              </button>
+            </div>
+          ) : null}
+
+          {usageMetrics ? (
+            <UsageDetailsDialog
+              usageMetrics={usageMetrics}
+              isOpen={isUsageDetailsOpen}
+              onClose={() => setIsUsageDetailsOpen(false)}
+            />
+          ) : null}
+
+          <div className="simulation-complete-actions">
+            <button type="button" className="open-resources-button" onClick={onOpenResources}>
+              Open Resources
+            </button>
+          </div>
         </div>
       ) : null}
     </article>
@@ -214,7 +492,7 @@ function App({ externalParameterValues }: Readonly<AppProps>) {
   const [selectedExperienceId, setSelectedExperienceId] = useState<DemoExperienceId>("");
   const [experience, setExperience] = useState<ExperienceDefinition | null>(null);
   const [parameterValues, setParameterValues] = useState<Record<string, string>>({});
-  const [, setExecutionContext] = useState<ExperienceContext | null>(null);
+  const executionContextRef = useRef<ExperienceContext | null>(null);
   const [runtimeResources, setRuntimeResources] = useState<ExperienceResource[]>([]);
   const [isLoadingExperience, setIsLoadingExperience] = useState(true);
   const [experienceLoadError, setExperienceLoadError] = useState<string | null>(null);
@@ -231,12 +509,8 @@ function App({ externalParameterValues }: Readonly<AppProps>) {
     Resources: null
   });
   const hasExternalParameterSource = externalParameterValues !== undefined;
-  const effectiveParameterValues = experience
-    ? mergeWithParameterDefaults(
-        experience.parameters,
-        hasExternalParameterSource ? externalParameterValues : parameterValues
-      )
-    : {};
+  const runtimeParameterValues = hasExternalParameterSource ? externalParameterValues : parameterValues;
+  const effectiveParameterValues = experience ? mergeWithParameterDefaults(experience.parameters, runtimeParameterValues) : {};
   const experienceInterpolation = experience
     ? getInterpolatedExperience(experience, effectiveParameterValues)
     : null;
@@ -262,7 +536,7 @@ function App({ externalParameterValues }: Readonly<AppProps>) {
       setExperienceLoadError(null);
       setExperience(null);
       setParameterValues({});
-      setExecutionContext(null);
+      executionContextRef.current = null;
       setRuntimeResources([]);
       setEngineSnapshot({
         state: "idle",
@@ -291,7 +565,7 @@ function App({ externalParameterValues }: Readonly<AppProps>) {
     }
 
     setParameterValues(getInitialParameterValues(experience.parameters));
-    setExecutionContext(null);
+    executionContextRef.current = null;
     setRuntimeResources(experience.resources);
 
     return () => {
@@ -327,7 +601,7 @@ function App({ externalParameterValues }: Readonly<AppProps>) {
       return;
     }
 
-    setExecutionContext(nextExecutionContext);
+    executionContextRef.current = nextExecutionContext;
     setRuntimeResources(runtimeExperience.experience.resources);
 
     engineRef.current?.dispose();
@@ -402,7 +676,7 @@ function App({ externalParameterValues }: Readonly<AppProps>) {
 
           <div className="panel-controls">
             <label className="experience-selector" htmlFor="experience-select">
-              Experience
+              <span className="experience-selector-label">Experience</span>
               <select
                 id="experience-select"
                 value={selectedExperienceId}
@@ -460,10 +734,9 @@ function App({ externalParameterValues }: Readonly<AppProps>) {
         </nav>
 
         <section
-          className={`content-area${activeTab === "Simulation" ? " simulation-content-area" : ""}`}
+          className={`content-area${activeTab === "Simulation" ? " simulation-content-area" : ""}${activeTab === "Prompt" ? " prompt-content-area" : ""}`}
           role="tabpanel"
           id={getPanelId(activeTab)}
-          aria-labelledby={getTabId(activeTab)}
           tabIndex={0}
         >
           {isLoadingExperience ? <p>Loading demo experience...</p> : null}
@@ -485,6 +758,7 @@ function App({ externalParameterValues }: Readonly<AppProps>) {
               state={engineSnapshot.state}
               statusMessage={engineSnapshot.statusMessage}
               contentItems={engineSnapshot.contentItems}
+              prompt={experienceInterpolation?.experience.prompt ?? experience?.prompt ?? null}
               onOpenResources={openResourcesTab}
             />
           ) : null}

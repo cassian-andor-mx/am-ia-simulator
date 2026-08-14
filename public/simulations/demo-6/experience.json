@@ -1,0 +1,137 @@
+{
+  "id": "demo-responsible-ai-usage-awareness",
+  "parameters": [
+    {
+      "id": "audience",
+      "label": "Audience",
+      "type": "select",
+      "defaultValue": "Leadership Team",
+      "options": [
+        {
+          "value": "Leadership Team",
+          "label": "Leadership Team"
+        },
+        {
+          "value": "Operations Team",
+          "label": "Operations Team"
+        },
+        {
+          "value": "Customer Success Team",
+          "label": "Customer Success Team"
+        }
+      ]
+    },
+    {
+      "id": "responseMode",
+      "label": "Response mode",
+      "type": "select",
+      "defaultValue": "Concise",
+      "options": [
+        {
+          "value": "Concise",
+          "label": "Concise"
+        },
+        {
+          "value": "Detailed",
+          "label": "Detailed"
+        }
+      ]
+    }
+  ],
+  "prompt": {
+    "title": "Prompt",
+    "paragraphs": [
+      "You are supporting the {{audience}} with a weekly business review.",
+      "Summarize the main result, one risk, and one action in a {{responseMode}} update that is easy for non-technical stakeholders to use.",
+      "Use plain language and keep recommendations directly tied to decisions."
+    ],
+    "checklist": [
+      "State the top outcome with one metric.",
+      "Highlight one operational risk with why it matters.",
+      "Provide one next action with clear ownership.",
+      "Prefer concise wording when possible to reduce unnecessary output length."
+    ],
+    "executeLabel": "Run Prompt"
+  },
+  "events": [
+    {
+      "type": "status",
+      "delayMs": 0,
+      "content": "Preparing responsible AI review for the {{audience}}..."
+    },
+    {
+      "type": "status",
+      "delayMs": 420,
+      "content": "Analyzing weekly KPIs and management notes in {{responseMode}} mode..."
+    },
+    {
+      "type": "message",
+      "delayMs": 620,
+      "content": "Top result: revenue increased 7.3% week over week, showing continued demand momentum for the {{audience}}.",
+      "render": "stream"
+    },
+    {
+      "type": "table",
+      "delayMs": 280,
+      "content": {
+        "title": "Weekly KPI Summary",
+        "columns": ["Metric", "Current", "Previous", "Signal"],
+        "rows": [
+          ["Revenue", "$128,400", "$119,700", "Positive"],
+          ["Orders", "1,842", "1,765", "Positive"],
+          ["Refund Rate", "2.1%", "1.6%", "Risk"]
+        ]
+      }
+    },
+    {
+      "type": "message",
+      "delayMs": 260,
+      "content": "Primary risk: refund rate increased to 2.1%, which can reduce margin if root causes are not addressed quickly.",
+      "render": "instant"
+    },
+    {
+      "type": "message",
+      "delayMs": 220,
+      "content": "Methodology note: token usage is estimated from visible prompt/output text, and environmental values are shown as reference profile estimates.",
+      "render": "instant"
+    },
+    {
+      "type": "message",
+      "delayMs": 220,
+      "content": "Efficiency insight: asking for a concise answer can lower output-token usage while preserving decision quality.",
+      "render": "instant"
+    },
+    {
+      "type": "link",
+      "delayMs": 220,
+      "content": {
+        "label": "Open responsible-ai notes",
+        "url": "/simulations/demo-6/assets/responsible-ai-notes.txt",
+        "description": "Notes that explain estimated vs reference values used in this demo."
+      }
+    },
+    {
+      "type": "status",
+      "delayMs": 180,
+      "content": "Publishing learning resources for the {{audience}}..."
+    },
+    {
+      "type": "complete",
+      "delayMs": 0
+    }
+  ],
+  "resources": [
+    {
+      "id": "responsible-ai-brief",
+      "fileName": "Responsible-AI-Brief.txt",
+      "path": "/simulations/demo-6/assets/responsible-ai-brief.txt",
+      "description": "Concise leadership brief produced by the responsible AI usage demo."
+    },
+    {
+      "id": "responsible-ai-kpi-export",
+      "fileName": "Responsible-AI-KPI-Export.csv",
+      "path": "/simulations/demo-6/assets/responsible-ai-kpi-export.csv",
+      "description": "KPI extract used in the responsible AI usage awareness simulation."
+    }
+  ]
+}

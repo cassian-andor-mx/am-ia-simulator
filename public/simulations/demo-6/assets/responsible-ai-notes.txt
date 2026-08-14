@@ -1,0 +1,5 @@
+Responsible AI Usage Notes
+
+- Token usage is estimated from the prompt and visible response content.
+- Environmental values are reference estimates, not direct measurements.
+- Use concise requests when long responses are unnecessary.
