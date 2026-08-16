@@ -207,7 +207,7 @@ function UsageDetailsDialog({ usageMetrics, isOpen, onClose }: Readonly<UsageDet
           </p>
           <p className="usage-details-environment-meta">Estimated, not measured.</p>
           <p className="usage-details-environment-reference-note">
-            Based on a published reference workload.
+            This is a reference estimate, not a measurement of this exact run.
           </p>
 
           <button
@@ -781,17 +781,6 @@ function App({ externalParameterValues }: Readonly<AppProps>) {
 
             <button
               type="button"
-              className={`usage-utility-trigger usage-utility-trigger-${usageUtility.state}`}
-              onClick={() => setIsUsageDetailsOpen(true)}
-              disabled={!isUsageControlEnabled}
-              aria-label={`AI Usage status: ${usageUtility.ariaDescription}`}
-            >
-              <span className="usage-utility-trigger-title">AI Usage</span>
-              <span className="usage-utility-trigger-value">{usageUtility.valueLabel}</span>
-            </button>
-
-            <button
-              type="button"
               className="panel-secondary-control"
               onClick={() => {
                 void toggleFullscreen();
@@ -803,31 +792,44 @@ function App({ externalParameterValues }: Readonly<AppProps>) {
           </div>
         </header>
 
-        <nav className="tab-bar" role="tablist" aria-label="Primary simulator sections">
-          {TAB_LABELS.map((tabLabel) => {
-            const isActive = activeTab === tabLabel;
+        <section className="tabs-toolbar" aria-label="Navigation and utilities">
+          <nav className="tab-bar" role="tablist" aria-label="Primary simulator sections">
+            {TAB_LABELS.map((tabLabel) => {
+              const isActive = activeTab === tabLabel;
 
-            return (
-              <button
-                key={tabLabel}
-                type="button"
-                role="tab"
-                id={getTabId(tabLabel)}
-                className="tab-button"
-                aria-selected={isActive}
-                aria-controls={getPanelId(tabLabel)}
-                tabIndex={isActive ? 0 : -1}
-                ref={(element) => {
-                  tabButtonRefs.current[tabLabel] = element;
-                }}
-                onClick={() => setActiveTab(tabLabel)}
-                onKeyDown={(event) => handleTabKeyDown(event, tabLabel)}
-              >
-                {tabLabel}
-              </button>
-            );
-          })}
-        </nav>
+              return (
+                <button
+                  key={tabLabel}
+                  type="button"
+                  role="tab"
+                  id={getTabId(tabLabel)}
+                  className="tab-button"
+                  aria-selected={isActive}
+                  aria-controls={getPanelId(tabLabel)}
+                  tabIndex={isActive ? 0 : -1}
+                  ref={(element) => {
+                    tabButtonRefs.current[tabLabel] = element;
+                  }}
+                  onClick={() => setActiveTab(tabLabel)}
+                  onKeyDown={(event) => handleTabKeyDown(event, tabLabel)}
+                >
+                  {tabLabel}
+                </button>
+              );
+            })}
+          </nav>
+
+          <button
+            type="button"
+            className={`usage-utility-trigger usage-utility-trigger-${usageUtility.state} usage-toolbar-trigger`}
+            onClick={() => setIsUsageDetailsOpen(true)}
+            disabled={!isUsageControlEnabled}
+            aria-label={`AI Usage status: ${usageUtility.ariaDescription}`}
+          >
+            <span className="usage-utility-trigger-title">AI Usage</span>
+            <span className="usage-utility-trigger-value">{usageUtility.valueLabel}</span>
+          </button>
+        </section>
 
         <ActiveTabContent
           activeTab={activeTab}
